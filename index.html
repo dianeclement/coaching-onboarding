@@ -69,7 +69,12 @@
   .tools-section-title { font-size: 12px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
   .tools-section-title span { background: #2eb89a; color: white; border-radius: 4px; padding: 1px 6px; font-size: 10px; }
   .tools-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
-  .tool-chip { background: #f0fdf9; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #065f46; }
+  .tool-chip { background: #f0fdf9; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #065f46; text-decoration: none; display: inline-block; }
+  .tool-chip.linkable { cursor: pointer; font-weight: 600; }
+  .tool-chip.linkable:hover { background: #d1fae5; border-color: #2eb89a; }
+  .tool-chip.editable { cursor: pointer; border-style: dashed; color: #374151; }
+  .tool-chip.editable:hover { background: #fffbeb; border-color: #fbbf24; }
+  .add-link { color: #9ca3af; font-size: 10px; margin-left: 2px; }
   .tool-note { font-size: 11px; color: #64748b; margin-top: 2px; font-style: italic; }
   .blocker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .blocker-item { background: #fef9f0; border: 1px solid #fde68a; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #78350f; }
@@ -149,45 +154,71 @@ const GATES = [
   "Senior Mentor assigned for first 30 days"
 ];
 
-const DAY3_DETAILS = `
+function resourceLinks() {
+  return JSON.parse(localStorage.getItem('resourceLinks') || '{}');
+}
+function setResourceLink(id, url) {
+  const links = resourceLinks();
+  links[id] = url;
+  localStorage.setItem('resourceLinks', JSON.stringify(links));
+}
+function chipHTML(id, label, fixedUrl) {
+  const links = resourceLinks();
+  const url = fixedUrl || links[id];
+  if (url) {
+    return `<a class="tool-chip linkable" href="${url}" target="_blank" rel="noopener">${label} ↗</a>`;
+  }
+  return `<span class="tool-chip editable" onclick="addLink('${id}','${label}')" title="Click to add link">${label} <span class="add-link">+ link</span></span>`;
+}
+function addLink(id, label) {
+  const current = resourceLinks()[id] || '';
+  const url = prompt(`Paste the URL for "${label}":`, current);
+  if (url && url.trim()) {
+    setResourceLink(id, url.trim());
+    render();
+  }
+}
+function buildDay3() {
+  return `
   <div class="tools-section">
     <div class="tools-section-title"><span>1</span> Tech &amp; Professionalism Setup</div>
     <div class="tools-row">
-      <div class="tool-chip">Zoom / Google Meet</div>
-      <div class="tool-chip">Read.ai (session recording)</div>
-      <div class="tool-chip">Stable internet connection</div>
-      <div class="tool-chip">Professional background</div>
+      ${chipHTML('zoom', 'Zoom / Google Meet', 'https://zoom.us')}
+      ${chipHTML('readai', 'Read.ai', 'https://read.ai')}
+      <span class="tool-chip">Stable internet connection</span>
+      <span class="tool-chip">Professional background</span>
     </div>
     <div class="tool-note">Read.ai records and transcribes every session automatically — confirm it's enabled before your first session.</div>
   </div>
   <div class="tools-section">
     <div class="tools-section-title"><span>2</span> Session Prep Tools</div>
     <div class="tools-row">
-      <div class="tool-chip">Legacy Dash — dash.2hourlearning.com</div>
-      <div class="tool-chip">Timeback</div>
-      <div class="tool-chip">Novatio — dash.novatio.school</div>
+      ${chipHTML('legacydash', 'Legacy Dash', 'https://dash.2hourlearning.com')}
+      ${chipHTML('timeback', 'Timeback')}
+      ${chipHTML('novatio', 'Novatio', 'https://dash.novatio.school')}
+      ${chipHTML('ixl', 'IXL', 'https://www.ixl.com')}
     </div>
     <div class="tool-note">IXL test credentials &rarr; Username: hortypuddlefoot122005 &nbsp;|&nbsp; PW: Iloveschool1!</div>
   </div>
   <div class="tools-section">
     <div class="tools-section-title"><span>3</span> Coaching Tracker &amp; Data Sheet</div>
     <div class="tools-row">
-      <div class="tool-chip">Coaching Tracker 2025-26 (Google Sheet)</div>
-      <div class="tool-chip">Data Sheet (DS) — fill after every session</div>
+      ${chipHTML('coachingtracker', 'Coaching Tracker 2025-26')}
+      ${chipHTML('datasheet', 'Data Sheet (DS)')}
     </div>
     <div class="tool-note">Find DS via Legacy Dash. Column V = Guide information. Complete the DS within 24 hrs of each session.</div>
   </div>
   <div class="tools-section">
     <div class="tools-section-title"><span>4</span> Resource Library</div>
     <div class="tools-row">
-      <div class="tool-chip">Math Annexure</div>
-      <div class="tool-chip">Language Annexure</div>
-      <div class="tool-chip">Reading Annexure</div>
-      <div class="tool-chip">Science Annexure</div>
-      <div class="tool-chip">Writing Annexure</div>
-      <div class="tool-chip">Khan Academy</div>
-      <div class="tool-chip">LL / Linc Level</div>
-      <div class="tool-chip">Math Academy</div>
+      ${chipHTML('annex-math', 'Math Annexure')}
+      ${chipHTML('annex-language', 'Language Annexure')}
+      ${chipHTML('annex-reading', 'Reading Annexure')}
+      ${chipHTML('annex-science', 'Science Annexure')}
+      ${chipHTML('annex-writing', 'Writing Annexure')}
+      ${chipHTML('khan', 'Khan Academy', 'https://www.khanacademy.org')}
+      ${chipHTML('linclevel', 'LL / Linc Level')}
+      ${chipHTML('mathacademy', 'Math Academy', 'https://www.mathacademy.com')}
     </div>
   </div>
   <div class="tools-section">
@@ -201,8 +232,8 @@ const DAY3_DETAILS = `
       <div class="blocker-item"><strong>Social-Emotional</strong>Personal stress affecting focus</div>
       <div class="blocker-item"><strong>External</strong>Home/environment factors</div>
     </div>
-  </div>
-`;
+  </div>`;
+}
 
 let coaches = JSON.parse(localStorage.getItem('coaches') || '[]');
 let selectedId = null;
@@ -332,7 +363,7 @@ function render() {
           <div style="flex:1">
             <div class="day-title">${d.title}${d.hasDetails ? `<button class="day-expand-btn" onclick="toggleDay3()">${day3Open ? '▾ Hide' : '▸ View Tools'}</button>` : ''}</div>
             <div class="day-desc">${d.desc}</div>
-            ${d.hasDetails ? `<div class="day-details ${day3Open ? 'open' : ''}" id="day3details">${DAY3_DETAILS}</div>` : ''}
+            ${d.hasDetails ? `<div class="day-details ${day3Open ? 'open' : ''}" id="day3details">${buildDay3()}</div>` : ''}
           </div>
         </div>`).join('')}
     </div>
