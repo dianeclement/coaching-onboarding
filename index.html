@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha School — Coach Onboarding Tracker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+  header { background: #1a2744; color: white; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header .logo { display: flex; align-items: center; gap: 12px; }
+  header .logo-icon { background: #2eb89a; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header p { font-size: 13px; color: #94a3b8; }
+  header button { background: #2eb89a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  header button:hover { background: #25a085; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 32px; }
+  .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .stat-card .label { font-size: 13px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .stat-card .value { font-size: 32px; font-weight: 700; color: #1a202c; }
+  .main { padding: 0 32px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a2744; }
+  .coach-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; }
+  .coach-item:hover { border-color: #2eb89a; }
+  .coach-item.active { border-color: #2eb89a; background: #f0fdf9; }
+  .coach-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: #1a2744; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .coach-name { font-weight: 600; font-size: 14px; }
+  .coach-meta { font-size: 12px; color: #64748b; }
+  .progress-bar { background: #e2e8f0; border-radius: 99px; height: 6px; margin-top: 8px; }
+  .progress-fill { background: #2eb89a; height: 6px; border-radius: 99px; transition: width 0.4s; }
+  .progress-label { font-size: 12px; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; }
+  .detail-empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
+  .detail-empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .days-grid { display: flex; flex-direction: column; gap: 10px; }
+  .day-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; background: #f8fafc; }
+  .day-item.completed { background: #f0fdf9; }
+  .day-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #94a3b8; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+  .day-circle.done { background: #2eb89a; border-color: #2eb89a; color: white; }
+  .day-title { font-weight: 600; font-size: 13px; color: #1a2744; }
+  .day-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .gate-list { margin-top: 16px; }
+  .gate-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+  .gate-item:last-child { border-bottom: none; }
+  .gate-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .gate-check.checked { background: #2eb89a; border-color: #2eb89a; color: white; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .badge-progress { background: #fef3c7; color: #92400e; }
+  .badge-complete { background: #d1fae5; color: #065f46; }
+  .badge-notstarted { background: #f1f5f9; color: #64748b; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; padding: 28px; width: 420px; max-width: 95vw; }
+  .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #1a2744; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; }
+  .form-group input:focus, .form-group select:focus { border-color: #2eb89a; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .btn-add { flex: 1; padding: 10px; background: #2eb89a; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .btn-add:hover { background: #25a085; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div>
+      <h1>Alpha School</h1>
+      <p>Coach Onboarding Tracker</p>
+    </div>
+  </div>
+  <button onclick="openModal()">+ Add Coach</button>
+</header>
+
+<div class="stats">
+  <div class="stat-card"><div class="label">👤 Total Coaches</div><div class="value" id="totalCoaches">0</div></div>
+  <div class="stat-card"><div class="label">🕐 In Progress</div><div class="value" id="inProgress">0</div></div>
+  <div class="stat-card"><div class="label">✅ Completed</div><div class="value" id="completed">0</div></div>
+  <div class="stat-card"><div class="label">⭐ Avg Progress</div><div class="value" id="avgProgress">0%</div></div>
+</div>
+
+<div class="main">
+  <div class="card">
+    <h2>Active Coaches</h2>
+    <div id="coachList"><div class="detail-empty"><div class="icon">👥</div><p>No coaches yet.<br>Click + Add Coach to get started.</p></div></div>
+  </div>
+  <div class="card">
+    <div id="detailPanel">
+      <div class="detail-empty"><div class="icon">👤</div><p>Select a coach to view<br>their onboarding progress.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Add New Coach</h2>
+    <div class="form-group"><label>Name *</label><input id="coachName" placeholder="Full name" /></div>
+    <div class="form-group"><label>Email</label><input id="coachEmail" placeholder="email@alpha.school" /></div>
+    <div class="form-group"><label>Start Date *</label><input id="coachStart" type="date" /></div>
+    <div class="form-group">
+      <label>Senior Mentor</label>
+      <select id="coachMentor">
+        <option value="">Select a mentor...</option>
+        <option>Joshua Albar</option>
+        <option>Mark Katigbak</option>
+        <option>Maryann Chidume</option>
+        <option>Philopateer Fouad</option>
+        <option>Priya Krishnan</option>
+        <option>Srboljub Kovačević</option>
+        <option>Diane Clement</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-add" onclick="addCoach()">Add Coach</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = [
+  { title: "Day 1 — The Why", desc: "Alpha's 3 promises, LIFT Framework, model sessions" },
+  { title: "Day 2 — The How", desc: "Live practice, role-play scenarios, real-time feedback" },
+  { title: "Day 3 — The Tools", desc: "AI tools, resource library, session prep, data dashboard" },
+  { title: "Day 4 — Shadow & Debrief", desc: "Observe 2 live sessions, debrief with observer guide" },
+  { title: "Day 5 — First Solo Session", desc: "Supported session, submit reflection, receive feedback" }
+];
+const GATES = [
+  "LIFT Framework demonstrated in simulated session",
+  "AI Tools Certification complete",
+  "Coaching Quality Bar reviewed and agreed",
+  "Senior Mentor assigned for first 30 days"
+];
+
+let coaches = JSON.parse(localStorage.getItem('coaches') || '[]');
+let selectedId = null;
+
+function save() { localStorage.setItem('coaches', JSON.stringify(coaches)); }
+
+function openModal() {
+  document.getElementById('coachName').value = '';
+  document.getElementById('coachEmail').value = '';
+  document.getElementById('coachStart').value = new Date().toISOString().split('T')[0];
+  document.getElementById('coachMentor').value = '';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function addCoach() {
+  const name = document.getElementById('coachName').value.trim();
+  const start = document.getElementById('coachStart').value;
+  if (!name || !start) { alert('Please fill in Name and Start Date.'); return; }
+  const coach = {
+    id: Date.now(),
+    name,
+    email: document.getElementById('coachEmail').value.trim(),
+    start,
+    mentor: document.getElementById('coachMentor').value,
+    days: [false, false, false, false, false],
+    gates: [false, false, false, false]
+  };
+  coaches.push(coach);
+  save();
+  closeModal();
+  render();
+  selectCoach(coach.id);
+}
+
+function selectCoach(id) {
+  selectedId = id;
+  render();
+}
+
+function toggleDay(coachId, dayIndex) {
+  const c = coaches.find(x => x.id === coachId);
+  if (!c) return;
+  c.days[dayIndex] = !c.days[dayIndex];
+  save(); render();
+}
+
+function toggleGate(coachId, gateIndex) {
+  const c = coaches.find(x => x.id === coachId);
+  if (!c) return;
+  c.gates[gateIndex] = !c.gates[gateIndex];
+  save(); render();
+}
+
+function getProgress(c) {
+  const d = c.days.filter(Boolean).length;
+  const g = c.gates.filter(Boolean).length;
+  return Math.round(((d + g) / 9) * 100);
+}
+
+function getStatus(c) {
+  const p = getProgress(c);
+  if (p === 100) return ['Complete', 'badge-complete'];
+  if (p > 0) return ['In Progress', 'badge-progress'];
+  return ['Not Started', 'badge-notstarted'];
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function render() {
+  // stats
+  const total = coaches.length;
+  const comp = coaches.filter(c => getProgress(c) === 100).length;
+  const inProg = coaches.filter(c => { const p = getProgress(c); return p > 0 && p < 100; }).length;
+  const avg = total ? Math.round(coaches.reduce((s, c) => s + getProgress(c), 0) / total) : 0;
+  document.getElementById('totalCoaches').textContent = total;
+  document.getElementById('inProgress').textContent = inProg;
+  document.getElementById('completed').textContent = comp;
+  document.getElementById('avgProgress').textContent = avg + '%';
+
+  // coach list
+  const list = document.getElementById('coachList');
+  if (!coaches.length) {
+    list.innerHTML = '<div class="detail-empty"><div class="icon">👥</div><p>No coaches yet.<br>Click + Add Coach to get started.</p></div>';
+  } else {
+    list.innerHTML = coaches.map(c => {
+      const p = getProgress(c);
+      const [label, cls] = getStatus(c);
+      return `<div class="coach-item ${selectedId === c.id ? 'active' : ''}" onclick="selectCoach(${c.id})">
+        <div class="coach-header">
+          <div class="avatar">${initials(c.name)}</div>
+          <div style="flex:1">
+            <div class="coach-name">${c.name} <span class="badge ${cls}">${label}</span></div>
+            <div class="coach-meta">Started ${c.start}${c.mentor ? ' · Mentor: ' + c.mentor : ''}</div>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
+        <div class="progress-label"><span>Progress</span><span>${p}%</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // detail panel
+  const panel = document.getElementById('detailPanel');
+  const sel = coaches.find(c => c.id === selectedId);
+  if (!sel) {
+    panel.innerHTML = '<div class="detail-empty"><div class="icon">👤</div><p>Select a coach to view<br>their onboarding progress.</p></div>';
+    return;
+  }
+  const [label, cls] = getStatus(sel);
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div class="avatar" style="width:48px;height:48px;font-size:18px">${initials(sel.name)}</div>
+      <div>
+        <div style="font-weight:700;font-size:16px">${sel.name} <span class="badge ${cls}">${label}</span></div>
+        <div style="font-size:12px;color:#64748b">Started ${sel.start}${sel.mentor ? ' · Mentor: ' + sel.mentor : ''}</div>
+      </div>
+    </div>
+    <h2>5-Day Onboarding Journey</h2>
+    <div class="days-grid">
+      ${DAYS.map((d, i) => `
+        <div class="day-item ${sel.days[i] ? 'completed' : ''}">
+          <div class="day-circle ${sel.days[i] ? 'done' : ''}" onclick="toggleDay(${sel.id}, ${i})">${sel.days[i] ? '✓' : i+1}</div>
+          <div><div class="day-title">${d.title}</div><div class="day-desc">${d.desc}</div></div>
+        </div>`).join('')}
+    </div>
+    <h2 style="margin-top:20px">Quality Gate Checklist</h2>
+    <div class="gate-list">
+      ${GATES.map((g, i) => `
+        <div class="gate-item">
+          <div class="gate-check ${sel.gates[i] ? 'checked' : ''}" onclick="toggleGate(${sel.id}, ${i})">${sel.gates[i] ? '✓' : ''}</div>
+          <span>${g}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
