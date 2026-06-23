@@ -3,52 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha School — Coach Onboarding Tracker</title>
+<title>Alpha School — Coach Onboarding</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
-  header { background: #1a2744; color: white; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+  /* HEADER */
+  header { background: #1a2744; color: white; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
   header .logo { display: flex; align-items: center; gap: 12px; }
-  header .logo-icon { background: #2eb89a; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  header h1 { font-size: 20px; font-weight: 700; }
-  header p { font-size: 13px; color: #94a3b8; }
-  header button { background: #2eb89a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  header button:hover { background: #25a085; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 32px; }
+  header .logo-icon { background: #2eb89a; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  header h1 { font-size: 18px; font-weight: 700; }
+  header p { font-size: 12px; color: #94a3b8; }
+
+  /* TABS */
+  .tab-bar { background: #1a2744; padding: 0 32px; display: flex; gap: 4px; border-top: 1px solid rgba(255,255,255,0.1); }
+  .tab-btn { padding: 12px 24px; font-size: 14px; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
+  .tab-btn.active { color: #2eb89a; border-bottom-color: #2eb89a; }
+  .tab-btn:hover:not(.active) { color: white; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── GUIDE VIEW ── */
+  .guide-wrap { max-width: 780px; margin: 32px auto; padding: 0 24px; }
+  .guide-header { margin-bottom: 28px; }
+  .guide-header h2 { font-size: 22px; font-weight: 700; color: #1a2744; }
+  .guide-header p { color: #64748b; font-size: 14px; margin-top: 4px; }
+
+  .day-card { background: white; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 14px; overflow: hidden; }
+  .day-card-header { display: flex; align-items: center; gap: 16px; padding: 18px 22px; cursor: pointer; user-select: none; }
+  .day-card-header:hover { background: #f8fafc; }
+  .day-num { width: 38px; height: 38px; border-radius: 50%; background: #1a2744; color: white; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .day-card.open .day-num { background: #2eb89a; }
+  .day-card-title { flex: 1; }
+  .day-card-title h3 { font-size: 15px; font-weight: 700; color: #1a2744; }
+  .day-card-title p { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .day-chevron { font-size: 18px; color: #94a3b8; transition: transform 0.2s; }
+  .day-card.open .day-chevron { transform: rotate(90deg); color: #2eb89a; }
+
+  .day-body { display: none; padding: 0 22px 22px; border-top: 1px solid #f1f5f9; }
+  .day-card.open .day-body { display: block; }
+
+  .section-block { margin-top: 18px; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #2eb89a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  .chip { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; text-decoration: none; }
+  .chip-link { background: #e6faf6; color: #065f46; border: 1px solid #a7f3d0; cursor: pointer; }
+  .chip-link:hover { background: #d1fae5; border-color: #2eb89a; }
+  .chip-pending { background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; cursor: pointer; }
+  .chip-pending:hover { background: #fffbeb; border-color: #fbbf24; color: #78350f; }
+  .chip-plain { background: #f1f5f9; color: #374151; border: 1px solid #e2e8f0; }
+
+  .note { font-size: 12px; color: #64748b; font-style: italic; margin-top: 6px; line-height: 1.5; }
+
+  .coming-soon { background: #fafafa; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 20px; text-align: center; color: #94a3b8; font-size: 13px; margin-top: 12px; }
+  .coming-soon span { display: block; font-size: 22px; margin-bottom: 6px; }
+
+  .blocker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .blocker-item { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #78350f; }
+  .blocker-item strong { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+
+  /* ── TRACKER VIEW ── */
+  .tracker-wrap { padding: 24px 32px; }
+  .tracker-top { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+  .btn-add { background: #2eb89a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-add:hover { background: #25a085; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
   .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .stat-card .label { font-size: 13px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .stat-card .value { font-size: 32px; font-weight: 700; color: #1a202c; }
-  .main { padding: 0 32px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a2744; }
-  .coach-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; }
+  .stat-card .label { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+  .stat-card .value { font-size: 32px; font-weight: 700; color: #1a2744; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; }
+  .card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .card h2 { font-size: 15px; font-weight: 700; color: #1a2744; margin-bottom: 16px; }
+
+  .coach-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
   .coach-item:hover { border-color: #2eb89a; }
   .coach-item.active { border-color: #2eb89a; background: #f0fdf9; }
-  .coach-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .avatar { width: 36px; height: 36px; border-radius: 50%; background: #1a2744; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .coach-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: #1a2744; color: white; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .coach-name { font-weight: 600; font-size: 14px; }
-  .coach-meta { font-size: 12px; color: #64748b; }
-  .progress-bar { background: #e2e8f0; border-radius: 99px; height: 6px; margin-top: 8px; }
-  .progress-fill { background: #2eb89a; height: 6px; border-radius: 99px; transition: width 0.4s; }
-  .progress-label { font-size: 12px; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; }
-  .detail-empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
-  .detail-empty .icon { font-size: 48px; margin-bottom: 12px; }
-  .days-grid { display: flex; flex-direction: column; gap: 10px; }
-  .day-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; background: #f8fafc; }
-  .day-item.completed { background: #f0fdf9; }
-  .day-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #94a3b8; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
-  .day-circle.done { background: #2eb89a; border-color: #2eb89a; color: white; }
-  .day-title { font-weight: 600; font-size: 13px; color: #1a2744; }
-  .day-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
-  .gate-list { margin-top: 16px; }
-  .gate-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-  .gate-item:last-child { border-bottom: none; }
-  .gate-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
-  .gate-check.checked { background: #2eb89a; border-color: #2eb89a; color: white; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
-  .badge-progress { background: #fef3c7; color: #92400e; }
+  .coach-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; font-weight: 600; }
   .badge-complete { background: #d1fae5; color: #065f46; }
+  .badge-progress { background: #dbeafe; color: #1e40af; }
   .badge-notstarted { background: #f1f5f9; color: #64748b; }
+  .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; }
+  .progress-fill { height: 6px; background: #2eb89a; border-radius: 3px; transition: width 0.3s; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+  .detail-empty { text-align: center; padding: 48px 20px; color: #94a3b8; }
+  .detail-empty .icon { font-size: 36px; margin-bottom: 10px; }
+
+  .days-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .day-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .day-item.completed { background: #f0fdf9; border-color: #a7f3d0; }
+  .day-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; color: #64748b; }
+  .day-circle.done { background: #2eb89a; border-color: #2eb89a; color: white; }
+  .day-title { font-size: 13px; font-weight: 600; color: #1a202c; }
+  .day-desc { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  .gate-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .gate-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .gate-check { width: 20px; height: 20px; border: 2px solid #cbd5e1; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; flex-shrink: 0; }
+  .gate-check.checked { background: #2eb89a; border-color: #2eb89a; color: white; }
+
+  /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal { background: white; border-radius: 16px; padding: 28px; width: 420px; max-width: 95vw; }
@@ -59,26 +123,8 @@
   .form-group input:focus, .form-group select:focus { border-color: #2eb89a; }
   .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .btn-cancel { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer; font-size: 14px; }
-  .btn-add { flex: 1; padding: 10px; background: #2eb89a; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
-  .btn-add:hover { background: #25a085; }
-  .day-expand-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: #2eb89a; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
-  .day-expand-btn:hover { background: #e6faf6; }
-  .day-details { margin-top: 10px; margin-left: 44px; display: none; }
-  .day-details.open { display: block; }
-  .tools-section { margin-bottom: 14px; }
-  .tools-section-title { font-size: 12px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-  .tools-section-title span { background: #2eb89a; color: white; border-radius: 4px; padding: 1px 6px; font-size: 10px; }
-  .tools-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
-  .tool-chip { background: #f0fdf9; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #065f46; text-decoration: none; display: inline-block; }
-  .tool-chip.linkable { cursor: pointer; font-weight: 600; }
-  .tool-chip.linkable:hover { background: #d1fae5; border-color: #2eb89a; }
-  .tool-chip.editable { cursor: pointer; border-style: dashed; color: #374151; }
-  .tool-chip.editable:hover { background: #fffbeb; border-color: #fbbf24; }
-  .add-link { color: #9ca3af; font-size: 10px; margin-left: 2px; }
-  .tool-note { font-size: 11px; color: #64748b; margin-top: 2px; font-style: italic; }
-  .blocker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .blocker-item { background: #fef9f0; border: 1px solid #fde68a; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #78350f; }
-  .blocker-item strong { display: block; font-size: 11px; }
+  .btn-confirm { flex: 1; padding: 10px; background: #2eb89a; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .btn-confirm:hover { background: #25a085; }
 </style>
 </head>
 <body>
@@ -88,31 +134,185 @@
     <div class="logo-icon">🎓</div>
     <div>
       <h1>Alpha School</h1>
-      <p>Coach Onboarding Tracker</p>
+      <p>Coach Onboarding</p>
     </div>
   </div>
-  <button onclick="openModal()">+ Add Coach</button>
 </header>
 
-<div class="stats">
-  <div class="stat-card"><div class="label">👤 Total Coaches</div><div class="value" id="totalCoaches">0</div></div>
-  <div class="stat-card"><div class="label">🕐 In Progress</div><div class="value" id="inProgress">0</div></div>
-  <div class="stat-card"><div class="label">✅ Completed</div><div class="value" id="completed">0</div></div>
-  <div class="stat-card"><div class="label">⭐ Avg Progress</div><div class="value" id="avgProgress">0%</div></div>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('guide')">📖 Coach Guide</button>
+  <button class="tab-btn" onclick="switchTab('tracker')">📊 Tracker</button>
 </div>
 
-<div class="main">
-  <div class="card">
-    <h2>Active Coaches</h2>
-    <div id="coachList"><div class="detail-empty"><div class="icon">👥</div><p>No coaches yet.<br>Click + Add Coach to get started.</p></div></div>
+<!-- ═══════════════ GUIDE VIEW ═══════════════ -->
+<div id="view-guide" class="view active">
+  <div class="guide-wrap">
+    <div class="guide-header">
+      <h2>5-Day Onboarding Journey</h2>
+      <p>Click each day to read what to expect, what to learn, and what tools you'll need.</p>
+    </div>
+
+    <!-- DAY 1 -->
+    <div class="day-card" id="day-1">
+      <div class="day-card-header" onclick="toggleDay('day-1')">
+        <div class="day-num">1</div>
+        <div class="day-card-title">
+          <h3>Day 1 — The Why</h3>
+          <p>Alpha's 3 promises, LIFT Framework, model sessions</p>
+        </div>
+        <div class="day-chevron">›</div>
+      </div>
+      <div class="day-body">
+        <div class="coming-soon"><span>📋</span>Content coming soon — playbook update in progress.</div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="day-card" id="day-2">
+      <div class="day-card-header" onclick="toggleDay('day-2')">
+        <div class="day-num">2</div>
+        <div class="day-card-title">
+          <h3>Day 2 — The How</h3>
+          <p>Live practice, role-play scenarios, real-time feedback</p>
+        </div>
+        <div class="day-chevron">›</div>
+      </div>
+      <div class="day-body">
+        <div class="coming-soon"><span>📋</span>Content coming soon — playbook update in progress.</div>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="day-card" id="day-3">
+      <div class="day-card-header" onclick="toggleDay('day-3')">
+        <div class="day-num">3</div>
+        <div class="day-card-title">
+          <h3>Day 3 — The Tools</h3>
+          <p>Tech setup, session prep, resource library, data tracking</p>
+        </div>
+        <div class="day-chevron">›</div>
+      </div>
+      <div class="day-body">
+
+        <div class="section-block">
+          <div class="section-label">Tech &amp; Professionalism Setup</div>
+          <div class="chip-row">
+            <a class="chip chip-link" href="https://zoom.us" target="_blank">Zoom / Google Meet ↗</a>
+            <a class="chip chip-link" href="https://read.ai" target="_blank">Read.ai ↗</a>
+            <span class="chip chip-plain">Stable internet</span>
+            <span class="chip chip-plain">Professional background</span>
+          </div>
+          <div class="note">Read.ai records and transcribes every session automatically — confirm it's enabled before your first session.</div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label">Session Prep Tools</div>
+          <div class="chip-row">
+            <a class="chip chip-link" href="https://dash.2hourlearning.com" target="_blank">Legacy Dash ↗</a>
+            <span class="chip chip-pending" onclick="addResourceLink('timeback','Timeback')" id="chip-timeback">Timeback + link</span>
+            <a class="chip chip-link" href="https://dash.novatio.school" target="_blank">Novatio ↗</a>
+            <a class="chip chip-link" href="https://www.ixl.com" target="_blank">IXL ↗</a>
+          </div>
+          <div class="note">IXL test credentials → Username: hortypuddlefoot122005 &nbsp;|&nbsp; PW: Iloveschool1!</div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label">Coaching Tracker &amp; Data Sheet</div>
+          <div class="chip-row">
+            <a class="chip chip-link" href="https://docs.google.com/spreadsheets/d/1O2q6lAyiSkRcOHvKDVdfND_486svTbC_0GI5rSONoNs/edit?usp=sharing" target="_blank">Coaching Tracker 2025-26 ↗</a>
+            <span class="chip chip-pending" onclick="addResourceLink('datasheet','Data Sheet (DS)')" id="chip-datasheet">Data Sheet (DS) + link</span>
+          </div>
+          <div class="note">Find DS via Legacy Dash. Column V = Guide information. Complete within 24 hrs of each session.</div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label">Resource Library</div>
+          <div class="chip-row">
+            <span class="chip chip-pending" onclick="addResourceLink('annex-math','Math Annexure')" id="chip-annex-math">Math Annexure + link</span>
+            <span class="chip chip-pending" onclick="addResourceLink('annex-language','Language Annexure')" id="chip-annex-language">Language Annexure + link</span>
+            <span class="chip chip-pending" onclick="addResourceLink('annex-reading','Reading Annexure')" id="chip-annex-reading">Reading Annexure + link</span>
+            <span class="chip chip-pending" onclick="addResourceLink('annex-science','Science Annexure')" id="chip-annex-science">Science Annexure + link</span>
+            <span class="chip chip-pending" onclick="addResourceLink('annex-writing','Writing Annexure')" id="chip-annex-writing">Writing Annexure + link</span>
+            <a class="chip chip-link" href="https://www.khanacademy.org" target="_blank">Khan Academy ↗</a>
+            <span class="chip chip-pending" onclick="addResourceLink('linclevel','LL / Linc Level')" id="chip-linclevel">LL / Linc Level + link</span>
+            <a class="chip chip-link" href="https://www.mathacademy.com" target="_blank">Math Academy ↗</a>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label">Blocker Field Guide</div>
+          <div class="blocker-grid">
+            <div class="blocker-item"><strong>Comprehension</strong>Student doesn't understand the content</div>
+            <div class="blocker-item"><strong>Motivation</strong>Student is disengaged or avoidant</div>
+            <div class="blocker-item"><strong>Skill Gap</strong>Missing prerequisite knowledge</div>
+            <div class="blocker-item"><strong>Pacing</strong>Working too fast or too slow</div>
+            <div class="blocker-item"><strong>Tech</strong>Platform or device issues</div>
+            <div class="blocker-item"><strong>Social-Emotional</strong>Personal stress affecting focus</div>
+            <div class="blocker-item"><strong>External</strong>Home/environment factors</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="day-card" id="day-4">
+      <div class="day-card-header" onclick="toggleDay('day-4')">
+        <div class="day-num">4</div>
+        <div class="day-card-title">
+          <h3>Day 4 — Shadow &amp; Debrief</h3>
+          <p>Observe 2 live sessions, debrief with observer guide</p>
+        </div>
+        <div class="day-chevron">›</div>
+      </div>
+      <div class="day-body">
+        <div class="coming-soon"><span>📋</span>Content coming soon — playbook update in progress.</div>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="day-card" id="day-5">
+      <div class="day-card-header" onclick="toggleDay('day-5')">
+        <div class="day-num">5</div>
+        <div class="day-card-title">
+          <h3>Day 5 — First Solo Session</h3>
+          <p>Supported session, submit reflection, receive feedback</p>
+        </div>
+        <div class="day-chevron">›</div>
+      </div>
+      <div class="day-body">
+        <div class="coming-soon"><span>📋</span>Content coming soon — playbook update in progress.</div>
+      </div>
+    </div>
+
   </div>
-  <div class="card">
-    <div id="detailPanel">
-      <div class="detail-empty"><div class="icon">👤</div><p>Select a coach to view<br>their onboarding progress.</p></div>
+</div>
+
+<!-- ═══════════════ TRACKER VIEW ═══════════════ -->
+<div id="view-tracker" class="view">
+  <div class="tracker-wrap">
+    <div class="tracker-top">
+      <button class="btn-add" onclick="openModal()">+ Add Coach</button>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="label">👤 Total Coaches</div><div class="value" id="totalCoaches">0</div></div>
+      <div class="stat-card"><div class="label">🕐 In Progress</div><div class="value" id="inProgress">0</div></div>
+      <div class="stat-card"><div class="label">✅ Completed</div><div class="value" id="completed">0</div></div>
+      <div class="stat-card"><div class="label">⭐ Avg Progress</div><div class="value" id="avgProgress">0%</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <h2>Active Coaches</h2>
+        <div id="coachList"><div class="detail-empty"><div class="icon">👥</div><p>No coaches yet.<br>Click + Add Coach to get started.</p></div></div>
+      </div>
+      <div class="card">
+        <div id="detailPanel"><div class="detail-empty"><div class="icon">👤</div><p>Select a coach to view<br>their onboarding progress.</p></div></div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h2>Add New Coach</h2>
@@ -134,16 +334,72 @@
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-add" onclick="addCoach()">Add Coach</button>
+      <button class="btn-confirm" onclick="addCoach()">Add Coach</button>
     </div>
   </div>
 </div>
 
 <script>
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'tracker') render();
+}
+
+// ── GUIDE: DAY EXPAND ──
+function toggleDay(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+
+// ── GUIDE: ADD RESOURCE LINKS ──
+function getLinks() { return JSON.parse(localStorage.getItem('resourceLinks') || '{}'); }
+function saveLinks(l) { localStorage.setItem('resourceLinks', JSON.stringify(l)); }
+
+function addResourceLink(id, label) {
+  const links = getLinks();
+  const url = prompt('Paste the URL for "' + label + '":', links[id] || '');
+  if (url && url.trim()) {
+    links[id] = url.trim();
+    saveLinks(links);
+    // replace chip with live link
+    const chip = document.getElementById('chip-' + id);
+    if (chip) {
+      const a = document.createElement('a');
+      a.className = 'chip chip-link';
+      a.href = url.trim();
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = label + ' ↗';
+      chip.replaceWith(a);
+    }
+  }
+}
+
+function applyStoredLinks() {
+  const links = getLinks();
+  Object.entries(links).forEach(([id, url]) => {
+    const chip = document.getElementById('chip-' + id);
+    if (chip) {
+      const a = document.createElement('a');
+      a.className = 'chip chip-link';
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = chip.textContent.replace('+ link', '').trim() + ' ↗';
+      chip.replaceWith(a);
+    }
+  });
+}
+
+// ── TRACKER ──
 const DAYS = [
   { title: "Day 1 — The Why", desc: "Alpha's 3 promises, LIFT Framework, model sessions" },
   { title: "Day 2 — The How", desc: "Live practice, role-play scenarios, real-time feedback" },
-  { title: "Day 3 — The Tools", desc: "AI tools, resource library, session prep, data dashboard", hasDetails: true },
+  { title: "Day 3 — The Tools", desc: "Tech setup, session prep, resource library, data tracking" },
   { title: "Day 4 — Shadow & Debrief", desc: "Observe 2 live sessions, debrief with observer guide" },
   { title: "Day 5 — First Solo Session", desc: "Supported session, submit reflection, receive feedback" }
 ];
@@ -154,90 +410,8 @@ const GATES = [
   "Senior Mentor assigned for first 30 days"
 ];
 
-function resourceLinks() {
-  return JSON.parse(localStorage.getItem('resourceLinks') || '{}');
-}
-function setResourceLink(id, url) {
-  const links = resourceLinks();
-  links[id] = url;
-  localStorage.setItem('resourceLinks', JSON.stringify(links));
-}
-function chipHTML(id, label, fixedUrl) {
-  const links = resourceLinks();
-  const url = fixedUrl || links[id];
-  if (url) {
-    return `<a class="tool-chip linkable" href="${url}" target="_blank" rel="noopener">${label} ↗</a>`;
-  }
-  return `<span class="tool-chip editable" onclick="addLink('${id}','${label}')" title="Click to add link">${label} <span class="add-link">+ link</span></span>`;
-}
-function addLink(id, label) {
-  const current = resourceLinks()[id] || '';
-  const url = prompt(`Paste the URL for "${label}":`, current);
-  if (url && url.trim()) {
-    setResourceLink(id, url.trim());
-    render();
-  }
-}
-function buildDay3() {
-  return `
-  <div class="tools-section">
-    <div class="tools-section-title"><span>1</span> Tech &amp; Professionalism Setup</div>
-    <div class="tools-row">
-      ${chipHTML('zoom', 'Zoom / Google Meet', 'https://zoom.us')}
-      ${chipHTML('readai', 'Read.ai', 'https://read.ai')}
-      <span class="tool-chip">Stable internet connection</span>
-      <span class="tool-chip">Professional background</span>
-    </div>
-    <div class="tool-note">Read.ai records and transcribes every session automatically — confirm it's enabled before your first session.</div>
-  </div>
-  <div class="tools-section">
-    <div class="tools-section-title"><span>2</span> Session Prep Tools</div>
-    <div class="tools-row">
-      ${chipHTML('legacydash', 'Legacy Dash', 'https://dash.2hourlearning.com')}
-      ${chipHTML('timeback', 'Timeback')}
-      ${chipHTML('novatio', 'Novatio', 'https://dash.novatio.school')}
-      ${chipHTML('ixl', 'IXL', 'https://www.ixl.com')}
-    </div>
-    <div class="tool-note">IXL test credentials &rarr; Username: hortypuddlefoot122005 &nbsp;|&nbsp; PW: Iloveschool1!</div>
-  </div>
-  <div class="tools-section">
-    <div class="tools-section-title"><span>3</span> Coaching Tracker &amp; Data Sheet</div>
-    <div class="tools-row">
-      ${chipHTML('coachingtracker', 'Coaching Tracker 2025-26', 'https://docs.google.com/spreadsheets/d/1O2q6lAyiSkRcOHvKDVdfND_486svTbC_0GI5rSONoNs/edit?usp=sharing')}
-      ${chipHTML('datasheet', 'Data Sheet (DS)')}
-    </div>
-    <div class="tool-note">Find DS via Legacy Dash. Column V = Guide information. Complete the DS within 24 hrs of each session.</div>
-  </div>
-  <div class="tools-section">
-    <div class="tools-section-title"><span>4</span> Resource Library</div>
-    <div class="tools-row">
-      ${chipHTML('annex-math', 'Math Annexure')}
-      ${chipHTML('annex-language', 'Language Annexure')}
-      ${chipHTML('annex-reading', 'Reading Annexure')}
-      ${chipHTML('annex-science', 'Science Annexure')}
-      ${chipHTML('annex-writing', 'Writing Annexure')}
-      ${chipHTML('khan', 'Khan Academy', 'https://www.khanacademy.org')}
-      ${chipHTML('linclevel', 'LL / Linc Level')}
-      ${chipHTML('mathacademy', 'Math Academy', 'https://www.mathacademy.com')}
-    </div>
-  </div>
-  <div class="tools-section">
-    <div class="tools-section-title"><span>5</span> Blocker Field Guide</div>
-    <div class="blocker-grid">
-      <div class="blocker-item"><strong>Comprehension</strong>Student doesn't understand the content</div>
-      <div class="blocker-item"><strong>Motivation</strong>Student is disengaged or avoidant</div>
-      <div class="blocker-item"><strong>Skill Gap</strong>Missing prerequisite knowledge</div>
-      <div class="blocker-item"><strong>Pacing</strong>Working too fast or too slow</div>
-      <div class="blocker-item"><strong>Tech</strong>Platform or device issues</div>
-      <div class="blocker-item"><strong>Social-Emotional</strong>Personal stress affecting focus</div>
-      <div class="blocker-item"><strong>External</strong>Home/environment factors</div>
-    </div>
-  </div>`;
-}
-
 let coaches = JSON.parse(localStorage.getItem('coaches') || '[]');
 let selectedId = null;
-let day3Open = false;
 
 function save() { localStorage.setItem('coaches', JSON.stringify(coaches)); }
 
@@ -255,82 +429,61 @@ function addCoach() {
   const start = document.getElementById('coachStart').value;
   if (!name || !start) { alert('Please fill in Name and Start Date.'); return; }
   const coach = {
-    id: Date.now(),
-    name,
+    id: Date.now(), name,
     email: document.getElementById('coachEmail').value.trim(),
-    start,
-    mentor: document.getElementById('coachMentor').value,
-    days: [false, false, false, false, false],
-    gates: [false, false, false, false]
+    start, mentor: document.getElementById('coachMentor').value,
+    days: [false,false,false,false,false],
+    gates: [false,false,false,false]
   };
   coaches.push(coach);
-  save();
-  closeModal();
-  render();
-  selectCoach(coach.id);
+  save(); closeModal(); render(); selectCoach(coach.id);
 }
 
-function selectCoach(id) {
-  selectedId = id;
-  render();
-}
+function selectCoach(id) { selectedId = id; render(); }
 
 function toggleDay(coachId, dayIndex) {
   const c = coaches.find(x => x.id === coachId);
-  if (!c) return;
-  c.days[dayIndex] = !c.days[dayIndex];
-  save(); render();
+  if (c) { c.days[dayIndex] = !c.days[dayIndex]; save(); render(); }
 }
-
-function toggleGate(coachId, gateIndex) {
+function toggleGate(coachId, i) {
   const c = coaches.find(x => x.id === coachId);
-  if (!c) return;
-  c.gates[gateIndex] = !c.gates[gateIndex];
-  save(); render();
+  if (c) { c.gates[i] = !c.gates[i]; save(); render(); }
 }
 
 function getProgress(c) {
-  const d = c.days.filter(Boolean).length;
-  const g = c.gates.filter(Boolean).length;
-  return Math.round(((d + g) / 9) * 100);
+  return Math.round(((c.days.filter(Boolean).length + c.gates.filter(Boolean).length) / 9) * 100);
 }
-
 function getStatus(c) {
   const p = getProgress(c);
-  if (p === 100) return ['Complete', 'badge-complete'];
-  if (p > 0) return ['In Progress', 'badge-progress'];
-  return ['Not Started', 'badge-notstarted'];
+  if (p === 100) return ['Complete','badge-complete'];
+  if (p > 0) return ['In Progress','badge-progress'];
+  return ['Not Started','badge-notstarted'];
 }
-
-function initials(name) {
-  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-}
+function initials(name) { return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
 
 function render() {
-  // stats
   const total = coaches.length;
   const comp = coaches.filter(c => getProgress(c) === 100).length;
-  const inProg = coaches.filter(c => { const p = getProgress(c); return p > 0 && p < 100; }).length;
-  const avg = total ? Math.round(coaches.reduce((s, c) => s + getProgress(c), 0) / total) : 0;
+  const inProg = coaches.filter(c => { const p=getProgress(c); return p>0&&p<100; }).length;
+  const avg = total ? Math.round(coaches.reduce((s,c)=>s+getProgress(c),0)/total) : 0;
   document.getElementById('totalCoaches').textContent = total;
   document.getElementById('inProgress').textContent = inProg;
   document.getElementById('completed').textContent = comp;
-  document.getElementById('avgProgress').textContent = avg + '%';
+  document.getElementById('avgProgress').textContent = avg+'%';
 
-  // coach list
   const list = document.getElementById('coachList');
   if (!coaches.length) {
     list.innerHTML = '<div class="detail-empty"><div class="icon">👥</div><p>No coaches yet.<br>Click + Add Coach to get started.</p></div>';
   } else {
     list.innerHTML = coaches.map(c => {
       const p = getProgress(c);
-      const [label, cls] = getStatus(c);
-      return `<div class="coach-item ${selectedId === c.id ? 'active' : ''}" onclick="selectCoach(${c.id})">
+      const [label,cls] = getStatus(c);
+      return `<div class="coach-item ${selectedId===c.id?'active':''}" onclick="selectCoach(${c.id})">
         <div class="coach-header">
           <div class="avatar">${initials(c.name)}</div>
           <div style="flex:1">
             <div class="coach-name">${c.name} <span class="badge ${cls}">${label}</span></div>
-            <div class="coach-meta">Started ${c.start}${c.mentor ? ' · Mentor: ' + c.mentor : ''}</div>
+            <div class="coach-meta">Started ${c.start}${c.mentor?' · Mentor: '+c.mentor:''}</div>
           </div>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
@@ -339,46 +492,40 @@ function render() {
     }).join('');
   }
 
-  // detail panel
   const panel = document.getElementById('detailPanel');
   const sel = coaches.find(c => c.id === selectedId);
   if (!sel) {
     panel.innerHTML = '<div class="detail-empty"><div class="icon">👤</div><p>Select a coach to view<br>their onboarding progress.</p></div>';
     return;
   }
-  const [label, cls] = getStatus(sel);
+  const [label,cls] = getStatus(sel);
   panel.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
       <div class="avatar" style="width:48px;height:48px;font-size:18px">${initials(sel.name)}</div>
       <div>
         <div style="font-weight:700;font-size:16px">${sel.name} <span class="badge ${cls}">${label}</span></div>
-        <div style="font-size:12px;color:#64748b">Started ${sel.start}${sel.mentor ? ' · Mentor: ' + sel.mentor : ''}</div>
+        <div style="font-size:12px;color:#64748b">Started ${sel.start}${sel.mentor?' · Mentor: '+sel.mentor:''}</div>
       </div>
     </div>
     <h2>5-Day Onboarding Journey</h2>
     <div class="days-grid">
-      ${DAYS.map((d, i) => `
-        <div class="day-item ${sel.days[i] ? 'completed' : ''}">
-          <div class="day-circle ${sel.days[i] ? 'done' : ''}" onclick="toggleDay(${sel.id}, ${i})">${sel.days[i] ? '✓' : i+1}</div>
-          <div style="flex:1">
-            <div class="day-title">${d.title}${d.hasDetails ? `<button class="day-expand-btn" onclick="toggleDay3()">${day3Open ? '▾ Hide' : '▸ View Tools'}</button>` : ''}</div>
-            <div class="day-desc">${d.desc}</div>
-            ${d.hasDetails ? `<div class="day-details ${day3Open ? 'open' : ''}" id="day3details">${buildDay3()}</div>` : ''}
-          </div>
+      ${DAYS.map((d,i) => `
+        <div class="day-item ${sel.days[i]?'completed':''}">
+          <div class="day-circle ${sel.days[i]?'done':''}" onclick="toggleDay(${sel.id},${i})">${sel.days[i]?'✓':i+1}</div>
+          <div><div class="day-title">${d.title}</div><div class="day-desc">${d.desc}</div></div>
         </div>`).join('')}
     </div>
     <h2 style="margin-top:20px">Quality Gate Checklist</h2>
     <div class="gate-list">
-      ${GATES.map((g, i) => `
+      ${GATES.map((g,i) => `
         <div class="gate-item">
-          <div class="gate-check ${sel.gates[i] ? 'checked' : ''}" onclick="toggleGate(${sel.id}, ${i})">${sel.gates[i] ? '✓' : ''}</div>
+          <div class="gate-check ${sel.gates[i]?'checked':''}" onclick="toggleGate(${sel.id},${i})">${sel.gates[i]?'✓':''}</div>
           <span>${g}</span>
         </div>`).join('')}
     </div>`;
 }
 
-function toggleDay3() { day3Open = !day3Open; render(); }
-
+applyStoredLinks();
 render();
 </script>
 </body>
