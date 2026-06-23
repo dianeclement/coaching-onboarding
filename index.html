@@ -61,6 +61,19 @@
   .btn-cancel { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .btn-add { flex: 1; padding: 10px; background: #2eb89a; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
   .btn-add:hover { background: #25a085; }
+  .day-expand-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: #2eb89a; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+  .day-expand-btn:hover { background: #e6faf6; }
+  .day-details { margin-top: 10px; margin-left: 44px; display: none; }
+  .day-details.open { display: block; }
+  .tools-section { margin-bottom: 14px; }
+  .tools-section-title { font-size: 12px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .tools-section-title span { background: #2eb89a; color: white; border-radius: 4px; padding: 1px 6px; font-size: 10px; }
+  .tools-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .tool-chip { background: #f0fdf9; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #065f46; }
+  .tool-note { font-size: 11px; color: #64748b; margin-top: 2px; font-style: italic; }
+  .blocker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .blocker-item { background: #fef9f0; border: 1px solid #fde68a; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #78350f; }
+  .blocker-item strong { display: block; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -125,7 +138,7 @@
 const DAYS = [
   { title: "Day 1 — The Why", desc: "Alpha's 3 promises, LIFT Framework, model sessions" },
   { title: "Day 2 — The How", desc: "Live practice, role-play scenarios, real-time feedback" },
-  { title: "Day 3 — The Tools", desc: "AI tools, resource library, session prep, data dashboard" },
+  { title: "Day 3 — The Tools", desc: "AI tools, resource library, session prep, data dashboard", hasDetails: true },
   { title: "Day 4 — Shadow & Debrief", desc: "Observe 2 live sessions, debrief with observer guide" },
   { title: "Day 5 — First Solo Session", desc: "Supported session, submit reflection, receive feedback" }
 ];
@@ -136,8 +149,64 @@ const GATES = [
   "Senior Mentor assigned for first 30 days"
 ];
 
+const DAY3_DETAILS = `
+  <div class="tools-section">
+    <div class="tools-section-title"><span>1</span> Tech &amp; Professionalism Setup</div>
+    <div class="tools-row">
+      <div class="tool-chip">Zoom / Google Meet</div>
+      <div class="tool-chip">Read.ai (session recording)</div>
+      <div class="tool-chip">Stable internet connection</div>
+      <div class="tool-chip">Professional background</div>
+    </div>
+    <div class="tool-note">Read.ai records and transcribes every session automatically — confirm it's enabled before your first session.</div>
+  </div>
+  <div class="tools-section">
+    <div class="tools-section-title"><span>2</span> Session Prep Tools</div>
+    <div class="tools-row">
+      <div class="tool-chip">Legacy Dash — dash.2hourlearning.com</div>
+      <div class="tool-chip">Timeback</div>
+      <div class="tool-chip">Novatio — dash.novatio.school</div>
+    </div>
+    <div class="tool-note">IXL test credentials &rarr; Username: hortypuddlefoot122005 &nbsp;|&nbsp; PW: Iloveschool1!</div>
+  </div>
+  <div class="tools-section">
+    <div class="tools-section-title"><span>3</span> Coaching Tracker &amp; Data Sheet</div>
+    <div class="tools-row">
+      <div class="tool-chip">Coaching Tracker 2025-26 (Google Sheet)</div>
+      <div class="tool-chip">Data Sheet (DS) — fill after every session</div>
+    </div>
+    <div class="tool-note">Find DS via Legacy Dash. Column V = Guide information. Complete the DS within 24 hrs of each session.</div>
+  </div>
+  <div class="tools-section">
+    <div class="tools-section-title"><span>4</span> Resource Library</div>
+    <div class="tools-row">
+      <div class="tool-chip">Math Annexure</div>
+      <div class="tool-chip">Language Annexure</div>
+      <div class="tool-chip">Reading Annexure</div>
+      <div class="tool-chip">Science Annexure</div>
+      <div class="tool-chip">Writing Annexure</div>
+      <div class="tool-chip">Khan Academy</div>
+      <div class="tool-chip">LL / Linc Level</div>
+      <div class="tool-chip">Math Academy</div>
+    </div>
+  </div>
+  <div class="tools-section">
+    <div class="tools-section-title"><span>5</span> Blocker Field Guide</div>
+    <div class="blocker-grid">
+      <div class="blocker-item"><strong>Comprehension</strong>Student doesn't understand the content</div>
+      <div class="blocker-item"><strong>Motivation</strong>Student is disengaged or avoidant</div>
+      <div class="blocker-item"><strong>Skill Gap</strong>Missing prerequisite knowledge</div>
+      <div class="blocker-item"><strong>Pacing</strong>Working too fast or too slow</div>
+      <div class="blocker-item"><strong>Tech</strong>Platform or device issues</div>
+      <div class="blocker-item"><strong>Social-Emotional</strong>Personal stress affecting focus</div>
+      <div class="blocker-item"><strong>External</strong>Home/environment factors</div>
+    </div>
+  </div>
+`;
+
 let coaches = JSON.parse(localStorage.getItem('coaches') || '[]');
 let selectedId = null;
+let day3Open = false;
 
 function save() { localStorage.setItem('coaches', JSON.stringify(coaches)); }
 
@@ -260,7 +329,11 @@ function render() {
       ${DAYS.map((d, i) => `
         <div class="day-item ${sel.days[i] ? 'completed' : ''}">
           <div class="day-circle ${sel.days[i] ? 'done' : ''}" onclick="toggleDay(${sel.id}, ${i})">${sel.days[i] ? '✓' : i+1}</div>
-          <div><div class="day-title">${d.title}</div><div class="day-desc">${d.desc}</div></div>
+          <div style="flex:1">
+            <div class="day-title">${d.title}${d.hasDetails ? `<button class="day-expand-btn" onclick="toggleDay3()">${day3Open ? '▾ Hide' : '▸ View Tools'}</button>` : ''}</div>
+            <div class="day-desc">${d.desc}</div>
+            ${d.hasDetails ? `<div class="day-details ${day3Open ? 'open' : ''}" id="day3details">${DAY3_DETAILS}</div>` : ''}
+          </div>
         </div>`).join('')}
     </div>
     <h2 style="margin-top:20px">Quality Gate Checklist</h2>
@@ -272,6 +345,8 @@ function render() {
         </div>`).join('')}
     </div>`;
 }
+
+function toggleDay3() { day3Open = !day3Open; render(); }
 
 render();
 </script>
